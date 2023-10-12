@@ -119,6 +119,40 @@ def get_polar_descriptor(Lx, Ly, dx, dy, projection='antarctic'):
 
     return descriptor
 
+def get_fris_descriptor(dx):
+    """
+    Get a descriptor of a polar stereographic grid used for remapping
+
+    Parameters
+    ----------
+    dx : double
+        Resolution of the grid in km
+
+    Returns
+    -------
+    descriptor : ``ProjectionGridDescriptor`` object
+        A descriptor of the FRIS grid
+    """
+
+    meshName = 'dx_{}km_fris_stereo'.format(dx)
+
+    bounds = [-1800., -400., 100., 1500.]
+    bounds = [1e3 * bound for bound in bounds]
+
+    width = (bounds[1] - bounds[0]) / 1e3
+    height = (bounds[3] - bounds[2]) / 1e3
+
+    nx = int(width / dx) + 1
+    x = numpy.linspace(bounds[0], bounds[1], nx)
+
+    ny = int(height / dx) + 1
+    y = numpy.linspace(bounds[2], bounds[3], ny)
+
+    projection = get_antarctic_stereographic_projection()
+
+    descriptor = ProjectionGridDescriptor.create(projection, x, y, meshName)
+
+    return descriptor
 
 def to_polar(points):
 

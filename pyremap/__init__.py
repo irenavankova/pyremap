@@ -9,7 +9,7 @@ from pyremap.descriptor import (
     ProjectionGridDescriptor,
     get_lat_lon_descriptor,
 )
-from pyremap.polar import get_polar_descriptor, get_polar_descriptor_from_file
+from pyremap.polar import get_polar_descriptor, get_polar_descriptor_from_file, get_fris_descriptor
 from pyremap.remapper import Remapper
 
 __version_info__ = (1, 1, 0)
