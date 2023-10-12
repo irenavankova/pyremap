@@ -134,7 +134,7 @@ def get_fris_descriptor(dx):
         A descriptor of the FRIS grid
     """
 
-    meshName = 'dx_{}km_fris_stereo'.format(dx)
+    meshName = 'dx{}km_fris'.format(dx)
 
     bounds = [-1800., -400., 100., 1500.]
     bounds = [1e3 * bound for bound in bounds]
