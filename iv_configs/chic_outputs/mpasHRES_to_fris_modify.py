@@ -1,0 +1,121 @@
+#!/usr/bin/env python
+# This software is open source software available under the BSD-3 license.
+#
+# Copyright (c) 2019 Triad National Security, LLC. All rights reserved.
+# Copyright (c) 2019 Lawrence Livermore National Security, LLC. All rights
+# reserved.
+# Copyright (c) 2019 UT-Battelle, LLC. All rights reserved.
+#
+# Additional copyright and license information can be found in the LICENSE file
+# distributed with this code, or at
+# https://raw.githubusercontent.com/MPAS-Dev/pyremap/main/LICENSE
+
+'''
+Creates a mapping file that can be used with ncremap (NCO) to remap MPAS files
+to a latitude/longitude grid.
+
+Usage: Copy this script into the main MPAS-Analysis directory (up one level).
+Modify the grid name, the path to the MPAS grid file and the output grid
+resolution.
+'''
+
+import xarray
+import pyproj
+
+from pyremap import MpasMeshDescriptor, Remapper, get_fris_descriptor, MpasEdgeMeshDescriptor
+
+# --------SPECIFIC--------------------------------------------------------
+
+print('Defining projections')
+
+# IN - mesh to map from
+nres = 4
+inGridName = f'FRISwISC0{nres}to60E3r1'
+inGridFileName_path = f'/usr/projects/e3sm/inputdata/ocn/mpas-o/FRISwISC0{nres}to60E3r1/'
+if nres == 8 or nres == 4:
+    tstamp = '20230913'
+elif nres == 2:
+    tstamp = '20230914'
+elif nres == 1:
+    tstamp = '20230915'
+inGridFileName = f'{inGridFileName_path}mpaso.{inGridName}.{tstamp}.nc'
+inDescriptor = MpasMeshDescriptor(inGridFileName, inGridName, vertices=False)
+inDescriptor_edge = MpasEdgeMeshDescriptor(inGridFileName, inGridName)
+ce = 'edge'
+
+# OUT - mesh to be mapped to
+outDescriptor = get_fris_descriptor(dx=1.)
+outGridName = outDescriptor.meshName
+
+# OUTPUT to remap from
+outputFileName_path = '/lustre/scratch4/turquoise/vankova/E3SM/scratch/chicoma-cpu/'
+run_name = '20231005.GMPAS-JRA1p5-DIB-PISMF.TL319_FRISwISC04to60E3r1.tPElay03.chicoma-cpu'
+outputFile = '20231005.GMPAS-JRA1p5-DIB-PISMF.TL319_FRISwISC04to60E3r1.tPElay03.chicoma-cpu.mpaso.inst.0001-01-06_01800.nc'
+outputFileName = f'{outputFileName_path}{run_name}/run/{outputFile}'
+var_cell = ['kineticEnergyCell']
+var_edge = ['gmKappaScaling', 'gmBolusKappa', 'gmHorizontalTaper']
+
+remapped_path = f'{outputFileName_path}{run_name}/remapped/'
+remappedFileName = 'remapped_{}_{}.nc'.format(outGridName, run_name)
+remappedFileName = f'{remapped_path}{remappedFileName}'
+
+# --------GENERAL--------------------------------------------------------
+print('Creating remapper object')
+remapper_path = '/usr/projects/climate/vankova/pyremap/remappers/'
+mappingFileName = 'map_{}_to_{}_bilinear.nc'.format(inGridName, outGridName)
+mappingFileName = f'{remapper_path}{mappingFileName}'
+mappingFileName_edge = 'map_{}_to_{}_bilinear_{}.nc'.format(inGridName, outGridName, ce)
+mappingFileName_edge = f'{remapper_path}{mappingFileName_edge}'
+
+
+remapper = Remapper(inDescriptor, outDescriptor, mappingFileName)
+remapper_edge = Remapper(inDescriptor_edge, outDescriptor, mappingFileName_edge)
+
+print('Creating matrix (mapping file)')
+remapper.build_mapping_file(method='bilinear', mpiTasks=1)
+remapper_edge.build_mapping_file(method='bilinear', mpiTasks=1)
+
+print('Selecting variable to remap')
+ds = xarray.open_dataset(outputFileName)
+dsOut = xarray.Dataset()
+dsOut_cell = xarray.Dataset()
+dsOut_edge = xarray.Dataset()
+
+ds_mesh = xarray.open_dataset(inGridFileName)
+maxLevelCell = ds_mesh.maxLevelCell - 1
+for var in var_cell:
+    print(var)
+    dd = list(ds[var].dims)
+    if 'nVertLevels' in dd:
+        dsOut_cell[f'{var}_top'] = ds[var].isel(nVertLevels=1)
+        dsOut_cell[f'{var}_bot'] = ds[var].isel(nVertLevels=maxLevelCell)
+    else:
+        dsOut_cell[var] = ds[var].isel
+var_cell_out = list(dsOut_cell.keys())
+for var in var_edge:
+    print(var)
+    dd = list(ds[var].dims)
+    if 'nVertLevelsP1' in dd:
+        dsOut_edge[var] = ds[var].isel(nVertLevelsP1=0)
+    else:
+        dsOut_edge[var] = ds[var]
+var_edge_out = list(dsOut_edge.keys())
+
+print('remapping with python remapping')
+dsOut_cell = remapper.remap(dsOut_cell)
+dsOut_edge = remapper_edge.remap(dsOut_edge)
+
+for var in var_cell_out:
+    print(var)
+    dsOut[var] = dsOut_cell[var]
+for var in var_edge_out:
+    print(var)
+    dsOut[var] = dsOut_edge[var]
+
+dsOut.to_netcdf(remappedFileName)
+
+'''
+print('remapping with ncremap')
+outFileName = 'temp_{}_file.nc'.format(outGridName)  # string f string change
+remapper.remap_file(inGridFileName, outFileName)
+'''
