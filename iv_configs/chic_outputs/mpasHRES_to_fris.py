@@ -82,11 +82,13 @@ dsOut_cell = xarray.Dataset()
 dsOut_edge = xarray.Dataset()
 
 # dsOut[in_var_name] = ds[in_var_name].isel(nVertLevels=0, Time=0) # if want only specific dimension
-
+maxLevelCell = ds.maxLevelCell - 1
 for var in var_cell:
     print(var)
     #if var in ['kineticEnergyCell']:
-    dsOut_cell[var] = ds[var].isel(nVertLevels=[1, 63])
+    #dsOut_cell[var] = ds[var].isel(nVertLevels=[1, maxLevelCell])
+    dsOut_cell[var] = ds[var].isel(nVertLevels=maxLevelCell)
+    #t_floor = ds['temperature'].isel(nVertLevels=maxLevelCell)
 
 for var in var_edge:
     print(var)
