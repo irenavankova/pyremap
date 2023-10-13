@@ -49,7 +49,8 @@ run_name = f'{inGridName}_init_{ce}'
 # outputFileName_path = '/Users/irenavankova/Work/data_sim/pyremap_files/output/'
 # outputFileName = f'{outputFileName_path}ECwISC30to60E2r1_velocityTidalRMS_CATS2008.nc'
 # var_name = 'velocityTidalRMS'
-remapped_path = f'{outputFileName_path}{run_name}/remapped/'
+remapped_path = '/usr/projects/climate/vankova/pyremap/files/'
+#remapped_path = f'{outputFileName_path}{run_name}/remapped/'
 remappedFileName = 'remapped_{}_{}.nc'.format(outGridName, run_name)
 remappedFileName = f'{remapped_path}{remappedFileName}'
 
