@@ -90,7 +90,7 @@ for var in var_cell:
     #dsOut_cell[var] = ds[var].isel(nVertLevels=[1, maxLevelCell])
     #dsOut_cell[var] = ds[var].isel(nVertLevels=maxLevelCell)
     dsOut_cell[f'{var}_top'] = ds[var].isel(nVertLevels=1)
-    #dsOut_cell[f'{var}_bot'] = ds[var].isel(nVertLevels=maxLevelCell)
+    dsOut_cell[f'{var}_bot'] = ds[var].isel(nVertLevels=maxLevelCell)
     #t_floor = ds['temperature'].isel(nVertLevels=maxLevelCell)
 var_cell_out = list(dsOut_cell.keys())
 for var in var_edge:
