@@ -52,7 +52,7 @@ outputFile = '20231005.GMPAS-JRA1p5-DIB-PISMF.TL319_FRISwISC08to60E3r1.tPElay03.
 outputFileName = f'{outputFileName_path}{run_name}/run/{outputFile}'
 var_name = ['gmKappaScaling', 'gmBolusKappa', 'gmHorizontalTaper', 'kineticEnergyCell']
 
-remapped_path = f'{outputFileName_path}/remapped'
+remapped_path = f'{outputFileName_path}{run_name}/remapped/'
 remappedFileName = 'remapped_{}_{}.nc'.format(outGridName, run_name)
 remappedFileName = f'{remapped_path}{remappedFileName}'
 
