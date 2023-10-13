@@ -31,24 +31,34 @@ print('Defining projections')
 # IN - mesh to map from
 nres = 8
 inGridName = f'FRISwISC0{nres}to60E3r1'
-inGridFileName_path = f'/Users/irenavankova/Work/data_sim/E3SM_initial_condition/{inGridName}/'
-inGridFileName = f'{inGridFileName_path}mpaso.{inGridName}.20230913.nc'
+inGridFileName_path = f'/usr/projects/e3sm/inputdata/ocn/mpas-o/FRISwISC0{nres}to60E3r1/'
+if nres == 8 or nres == 4:
+    tstamp = '20230913'
+elif nres == 2:
+    tstamp = '20230914'
+elif nres == 1:
+    tstamp = '20230915'
+inGridFileName = f'{inGridFileName_path}mpaso.{inGridName}.{tstamp}.nc'
 inDescriptor = MpasMeshDescriptor(inGridFileName, inGridName, vertices=False)
 
 # OUT - mesh to be mapped to
-outDescriptor = get_fris_descriptor(dx=10.)
+outDescriptor = get_fris_descriptor(dx=1.)
 outGridName = outDescriptor.meshName
 
 # OUTPUT to remap from
 outputFileName_path = inGridFileName_path
 outputFileName = inGridFileName
 var_name = ['temperature', 'salinity']
-run_name = 'ECwISC30to60E2r1_velocityTidalRMS_CATS2008'
+run_name = f'{inGridName}_init'
+remapped_path = '/usr/projects/climate/vankova/pyremap/files/'
 remappedFileName = 'remapped_{}_{}.nc'.format(outGridName, run_name)
+remappedFileName = f'{remapped_path}{remappedFileName}'
 
 # --------GENERAL--------------------------------------------------------
 print('Creating remapper object')
+remapper_path = '/usr/projects/climate/vankova/pyremap/remappers/'
 mappingFileName = 'map_{}_to_{}_bilinear.nc'.format(inGridName, outGridName)
+mappingFileName = f'{remapper_path}{mappingFileName}'
 
 remapper = Remapper(inDescriptor, outDescriptor, mappingFileName)
 
