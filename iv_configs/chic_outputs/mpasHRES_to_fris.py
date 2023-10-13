@@ -22,7 +22,7 @@ resolution.
 import xarray
 import pyproj
 
-from pyremap import MpasMeshDescriptor, Remapper, get_fris_descriptor
+from pyremap import MpasMeshDescriptor, Remapper, get_fris_descriptor, MpasEdgeMeshDescriptor
 
 # --------SPECIFIC--------------------------------------------------------
 
@@ -40,6 +40,8 @@ elif nres == 1:
     tstamp = '20230915'
 inGridFileName = f'{inGridFileName_path}mpaso.{inGridName}.{tstamp}.nc'
 inDescriptor = MpasMeshDescriptor(inGridFileName, inGridName, vertices=False)
+inDescriptor_edge = MpasEdgeMeshDescriptor(inGridFileName, inGridName)
+ce = 'edge'
 
 # OUT - mesh to be mapped to
 outDescriptor = get_fris_descriptor(dx=1.)
@@ -50,7 +52,8 @@ outputFileName_path = '/lustre/scratch4/turquoise/vankova/E3SM/scratch/chicoma-c
 run_name = '20231005.GMPAS-JRA1p5-DIB-PISMF.TL319_FRISwISC08to60E3r1.tPElay03.chicoma-cpu'
 outputFile = '20231005.GMPAS-JRA1p5-DIB-PISMF.TL319_FRISwISC08to60E3r1.tPElay03.chicoma-cpu.mpaso.inst.0001-01-06_01800.nc'
 outputFileName = f'{outputFileName_path}{run_name}/run/{outputFile}'
-var_name = ['gmKappaScaling', 'gmBolusKappa', 'gmHorizontalTaper', 'kineticEnergyCell']
+var_cell = ['kineticEnergyCell']
+var_edge = ['gmKappaScaling', 'gmBolusKappa', 'gmHorizontalTaper']
 
 remapped_path = f'{outputFileName_path}{run_name}/remapped/'
 remappedFileName = 'remapped_{}_{}.nc'.format(outGridName, run_name)
@@ -61,28 +64,41 @@ print('Creating remapper object')
 remapper_path = '/usr/projects/climate/vankova/pyremap/remappers/'
 mappingFileName = 'map_{}_to_{}_bilinear.nc'.format(inGridName, outGridName)
 mappingFileName = f'{remapper_path}{mappingFileName}'
+mappingFileName_edge = 'map_{}_to_{}_bilinear_{}.nc'.format(inGridName, outGridName, ce)
+mappingFileName_edge = f'{remapper_path}{mappingFileName_edge}'
+
 
 remapper = Remapper(inDescriptor, outDescriptor, mappingFileName)
+remapper_edge = Remapper(inDescriptor_edge, outDescriptor, mappingFileName_edge)
 
 print('Creating matrix (mapping file)')
 remapper.build_mapping_file(method='bilinear', mpiTasks=1)
+remapper_edge.build_mapping_file(method='bilinear', mpiTasks=1)
 
 print('Selecting variable to remap')
 ds = xarray.open_dataset(outputFileName)
 dsOut = xarray.Dataset()
+dsOut_cell = xarray.Dataset()
+dsOut_edge = xarray.Dataset()
+
 # dsOut[in_var_name] = ds[in_var_name].isel(nVertLevels=0, Time=0) # if want only specific dimension
 
-for var in var_name:
+for var in var_cell:
     print(var)
-    dsOut[var] = ds[var]
-    if var in ['gmKappaScaling']:
-        dsOut[var] = ds[var].isel(nVertLevelsP1=0)
-    if var in ['kineticEnergyCell']:
-        dsOut[var] = ds[var].isel(nVertLevels=0)
+    #if var in ['kineticEnergyCell']:
+    dsOut_cell[var] = ds[var].isel(nVertLevels=[1, 63])
 
+for var in var_edge:
+    print(var)
+    #if var in ['gmKappaScaling']:
+    dsOut_edge[var] = ds[var].isel(nVertLevelsP1=0)
+    #else:
+    #    dsOut[var] = ds[var]
 
 print('remapping with python remapping')
-dsOut = remapper.remap(dsOut)
+dsOut_cell = remapper.remap(dsOut_cell)
+dsOut_edge = remapper_edge.remap(dsOut_edge)
+dsOut.merge([dsOut_cell, dsOut_edge])
 dsOut.to_netcdf(remappedFileName)
 
 '''

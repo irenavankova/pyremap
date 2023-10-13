@@ -44,7 +44,8 @@ outGridName = outDescriptor.meshName
 outputFileName_path = inGridFileName_path
 outputFileName = inGridFileName
 #var_name = ['temperature', 'salinity']
-var_name = ['normalBarotropicVelocity']
+var_name1 = ['normalBarotropicVelocity']
+var_name2 = ['normalVelocity']
 run_name = f'{inGridName}_init_{ce}'
 # outputFileName_path = '/Users/irenavankova/Work/data_sim/pyremap_files/output/'
 # outputFileName = f'{outputFileName_path}ECwISC30to60E2r1_velocityTidalRMS_CATS2008.nc'
@@ -68,13 +69,20 @@ remapper.build_mapping_file(method='bilinear', mpiTasks=1)
 print('Selecting variable to remap')
 ds = xarray.open_dataset(outputFileName)
 dsOut = xarray.Dataset()
+dsOut1 = xarray.Dataset()
+dsOut2 = xarray.Dataset()
 # dsOut[in_var_name] = ds[in_var_name].isel(nVertLevels=0, Time=0) # if want only specific dimension
 
-for var in var_name:
+for var in var_name1:
     print(var)
-    dsOut[var] = ds[var]
+    dsOut1[var] = ds[var]
+
+for var in var_name2:
+    print(var)
+    dsOut2[var] = ds[var].isel(nVertLevels=[0])
 
 print('remapping with python remapping')
+dsOut.merge([dsOut1, dsOut2])
 dsOut = remapper.remap(dsOut)
 dsOut.to_netcdf(remappedFileName)
 
