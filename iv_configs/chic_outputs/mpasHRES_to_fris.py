@@ -78,7 +78,7 @@ for var in var_name:
     if var in ['gmKappaScaling']:
         dsOut[var] = ds[var].isel(nVertLevelsP1=0)
     if var in ['kineticEnergyCell']:
-        dsOut[var] = ds[var].isel(nVertLevels=[0])
+        dsOut[var] = ds[var].isel(nVertLevels=0)
 
 
 print('remapping with python remapping')
