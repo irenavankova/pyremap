@@ -88,7 +88,7 @@ for var in var_name1:
     dsOut[var] = dsOut1[var]
 for var in var_name2:
     print(var)
-    dsOut[var] = var_name2[var]
+    dsOut[var] = dsOut2[var]
 
 dsOut = remapper.remap(dsOut)
 dsOut.to_netcdf(remappedFileName)
