@@ -82,7 +82,14 @@ for var in var_name2:
     dsOut2[var] = ds[var].isel(nVertLevels=[0])
 
 print('remapping with python remapping')
-dsOut.merge([dsOut1, dsOut2])
+#dsOut.merge([dsOut1, dsOut2])
+for var in var_name1:
+    print(var)
+    dsOut[var] = dsOut1[var]
+for var in var_name2:
+    print(var)
+    dsOut[var] = var_name2[var]
+
 dsOut = remapper.remap(dsOut)
 dsOut.to_netcdf(remappedFileName)
 
