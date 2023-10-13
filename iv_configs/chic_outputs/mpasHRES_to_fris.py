@@ -90,10 +90,10 @@ for var in var_cell:
 
 for var in var_edge:
     print(var)
-    #if var in ['gmKappaScaling']:
-    dsOut_edge[var] = ds[var].isel(nVertLevelsP1=0)
-    #else:
-    #    dsOut[var] = ds[var]
+    if var in ['gmKappaScaling']:
+        dsOut_edge[var] = ds[var].isel(nVertLevelsP1=0)
+    else:
+        dsOut[var] = ds[var]
 
 print('remapping with python remapping')
 dsOut_cell = remapper.remap(dsOut_cell)
