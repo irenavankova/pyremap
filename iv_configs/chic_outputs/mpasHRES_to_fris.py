@@ -98,7 +98,14 @@ for var in var_edge:
 print('remapping with python remapping')
 dsOut_cell = remapper.remap(dsOut_cell)
 dsOut_edge = remapper_edge.remap(dsOut_edge)
-dsOut.merge([dsOut_cell, dsOut_edge])
+#dsOut.merge([dsOut_cell, dsOut_edge])
+for var in var_cell:
+    print(var)
+    dsOut[var] = dsOut_cell[var]
+for var in var_edge:
+    print(var)
+    dsOut[var] = dsOut_edge[var]
+
 dsOut.to_netcdf(remappedFileName)
 
 '''
