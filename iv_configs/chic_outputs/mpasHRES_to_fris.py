@@ -84,14 +84,16 @@ dsOut_edge = xarray.Dataset()
 # dsOut[in_var_name] = ds[in_var_name].isel(nVertLevels=0, Time=0) # if want only specific dimension
 ds_mesh = xarray.open_dataset(inGridFileName)
 maxLevelCell = ds_mesh.maxLevelCell - 1
+var_cell_out = []
 for var in var_cell:
     print(var)
     #if var in ['kineticEnergyCell']:
     #dsOut_cell[var] = ds[var].isel(nVertLevels=[1, maxLevelCell])
     #dsOut_cell[var] = ds[var].isel(nVertLevels=maxLevelCell)
     dsOut_cell[f'{var}_top'] = ds[var].isel(nVertLevels=1)
-    dsOut_cell[f'{var}_bot'] = ds[var].isel(nVertLevels=maxLevelCell)
+    #dsOut_cell[f'{var}_bot'] = ds[var].isel(nVertLevels=maxLevelCell)
     #t_floor = ds['temperature'].isel(nVertLevels=maxLevelCell)
+    var_cell_out = [var_cell_out, f'{var}_top']
 
 for var in var_edge:
     print(var)
@@ -104,7 +106,7 @@ print('remapping with python remapping')
 dsOut_cell = remapper.remap(dsOut_cell)
 dsOut_edge = remapper_edge.remap(dsOut_edge)
 #dsOut.merge([dsOut_cell, dsOut_edge])
-for var in var_cell:
+for var in var_cell_out:
     print(var)
     dsOut[var] = dsOut_cell[var]
 for var in var_edge:
