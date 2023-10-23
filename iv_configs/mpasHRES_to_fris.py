@@ -32,7 +32,13 @@ print('Defining projections')
 nres = 8
 inGridName = f'FRISwISC0{nres}to60E3r1'
 inGridFileName_path = f'/Users/irenavankova/Work/data_sim/E3SM_initial_condition/{inGridName}/'
-inGridFileName = f'{inGridFileName_path}mpaso.{inGridName}.20230913.nc'
+if nres == 8 or nres == 4:
+    tstamp = '20230913'
+elif nres == 2:
+    tstamp = '20230914'
+elif nres == 1:
+    tstamp = '20230915'
+inGridFileName = f'{inGridFileName_path}mpaso.{inGridName}.{tstamp}.nc'
 inDescriptor = MpasMeshDescriptor(inGridFileName, inGridName, vertices=False)
 
 # OUT - mesh to be mapped to
@@ -43,7 +49,8 @@ outGridName = outDescriptor.meshName
 outputFileName_path = inGridFileName_path
 outputFileName = inGridFileName
 var_name = ['temperature', 'salinity']
-run_name = 'ECwISC30to60E2r1_velocityTidalRMS_CATS2008'
+run_name = f'{inGridName}_init'
+#var_name = ['salinity']
 remappedFileName = 'remapped_{}_{}.nc'.format(outGridName, run_name)
 
 # --------GENERAL--------------------------------------------------------
@@ -62,7 +69,11 @@ dsOut = xarray.Dataset()
 
 for var in var_name:
     print(var)
-    dsOut[var] = ds[var]
+    #dsOut[var] = ds[var]
+    #if var in ['salinity']:
+    dsOut[var] = ds[var].isel(nVertLevels=[0, 12])
+    #else:
+        #dsOut[var] = ds[var].isel(nVertLevels=0)  # if want only specific dimension
 
 print('remapping with python remapping')
 dsOut = remapper.remap(dsOut)

@@ -22,7 +22,7 @@ resolution.
 import xarray
 import pyproj
 
-from pyremap import MpasMeshDescriptor, Remapper, get_fris_descriptor
+from pyremap import MpasMeshDescriptor, Remapper, get_fris_descriptor, MpasEdgeMeshDescriptor
 
 # --------SPECIFIC--------------------------------------------------------
 
@@ -32,7 +32,9 @@ print('Defining projections')
 inGridName = 'ECwISC30to60E2r1'
 inGridFileName_path = '/Users/irenavankova/Work/data_sim/E3SM_initial_condition/'
 inGridFileName = f'{inGridFileName_path}ocean.ECwISC30to60E2r1.230220.nc'
-inDescriptor = MpasMeshDescriptor(inGridFileName, inGridName, vertices=False)
+#inDescriptor = MpasMeshDescriptor(inGridFileName, inGridName, vertices=False)
+inDescriptor = MpasEdgeMeshDescriptor(inGridFileName, inGridName)
+ce = 'edge'
 
 # OUT - mesh to be mapped to
 outDescriptor = get_fris_descriptor(dx=10.)
@@ -41,16 +43,18 @@ outGridName = outDescriptor.meshName
 # OUTPUT to remap from
 outputFileName_path = inGridFileName_path
 outputFileName = inGridFileName
-var_name = ['temperature', 'salinity']
+#var_name = ['temperature', 'salinity']
+var_name1 = ['normalBarotropicVelocity']
+var_name2 = ['normalVelocity']
 run_name = f'{inGridName}_init'
 # outputFileName_path = '/Users/irenavankova/Work/data_sim/pyremap_files/output/'
 # outputFileName = f'{outputFileName_path}ECwISC30to60E2r1_velocityTidalRMS_CATS2008.nc'
 # var_name = 'velocityTidalRMS'
-remappedFileName = 'remapped_{}_{}.nc'.format(outGridName, run_name)
+remappedFileName = 'remapped_{}_{}_{}.nc'.format(ce, outGridName, run_name)
 
 # --------GENERAL--------------------------------------------------------
 print('Creating remapper object')
-mappingFileName = 'map_{}_to_{}_bilinear.nc'.format(inGridName, outGridName)
+mappingFileName = 'map_{}_to_{}_bilinear_{}.nc'.format(inGridName, outGridName, ce)
 
 remapper = Remapper(inDescriptor, outDescriptor, mappingFileName)
 
@@ -60,40 +64,20 @@ remapper.build_mapping_file(method='bilinear', mpiTasks=1)
 print('Selecting variable to remap')
 ds = xarray.open_dataset(outputFileName)
 dsOut = xarray.Dataset()
+dsOut1 = xarray.Dataset()
+dsOut2 = xarray.Dataset()
 # dsOut[in_var_name] = ds[in_var_name].isel(nVertLevels=0, Time=0) # if want only specific dimension
 
-maxLevelCell = ds.maxLevelCell - 1
-for var in var_name:
+for var in var_name1:
     print(var)
-    #dsOut[var] = ds[var]
-    dsOut[var] = ds[var].isel(nVertLevels=[1])
-dsOut[f'{var}_bot'] = ds['salinity'].isel(nVertLevels=maxLevelCell)
-'''
-aa = list(dsOut.keys())
-print(dsOut.coords)
-cc = list(dsOut.coords)
-print(aa)
-print(cc)
-print(dsOut)
-print(dsOut['salinity'])
-print(dsOut.dims)
-print('trying to print salinity dimensions')
-print(dsOut['salinity'].dims)
-dd = list(dsOut['salinity'].dims)
-print(dd)
-print(dd[1])
-for var in aa:
-    print(var)
+    dsOut1[var] = ds[var]
 
-for var in var_name:
-    dd = list(ds[var].dims)
-    print(dd)
-    if 'Time' in dd:
-        print('YAY')
-    else:
-        print('No!')
-'''
+for var in var_name2:
+    print(var)
+    dsOut2[var] = ds[var].isel(nVertLevels=[0])
+
 print('remapping with python remapping')
+dsOut.merge([dsOut1, dsOut2])
 dsOut = remapper.remap(dsOut)
 dsOut.to_netcdf(remappedFileName)
 
