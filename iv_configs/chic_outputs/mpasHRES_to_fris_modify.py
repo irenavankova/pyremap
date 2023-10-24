@@ -29,7 +29,7 @@ from pyremap import MpasMeshDescriptor, Remapper, get_fris_descriptor, MpasEdgeM
 print('Defining projections')
 
 # IN - mesh to map from
-nres = 4
+nres = 1
 inGridName = f'FRISwISC0{nres}to60E3r1'
 inGridFileName_path = f'/usr/projects/e3sm/inputdata/ocn/mpas-o/FRISwISC0{nres}to60E3r1/'
 if nres == 8 or nres == 4:
@@ -49,8 +49,12 @@ outGridName = outDescriptor.meshName
 
 # OUTPUT to remap from
 outputFileName_path = '/lustre/scratch4/turquoise/vankova/E3SM/scratch/chicoma-cpu/'
-run_name = '20231005.GMPAS-JRA1p5-DIB-PISMF.TL319_FRISwISC04to60E3r1.tPElay03.chicoma-cpu'
-outputFile = '20231005.GMPAS-JRA1p5-DIB-PISMF.TL319_FRISwISC04to60E3r1.tPElay03.chicoma-cpu.mpaso.inst.0001-01-06_01800.nc'
+run_name = '20231009.GMPAS-JRA1p5-DIB-PISMF.TL319_FRISwISC01to60E3r1.tPElay00.chicoma-cpu'
+#run_name = '20231005.GMPAS-JRA1p5-DIB-PISMF.TL319_FRISwISC08to60E3r1.tPElay03.chicoma-cpu'
+#run_name = '20231002.GMPAS-JRA1p5-DIB-PISMF.TL319_FRISwISC02to60E3r1.test5d.chicoma-cpu'
+#outputFile = '20231005.GMPAS-JRA1p5-DIB-PISMF.TL319_FRISwISC08to60E3r1.tPElay03.chicoma-cpu.mpaso.inst.0001-01-06_01800.nc'
+outputFile = '20231009.GMPAS-JRA1p5-DIB-PISMF.TL319_FRISwISC01to60E3r1.tPElay00.chicoma-cpu.mpaso.inst.0001-01-06_01800.nc'
+#outputFile = '20231002.GMPAS-JRA1p5-DIB-PISMF.TL319_FRISwISC02to60E3r1.test5d.chicoma-cpu.mpaso.inst.0001-02-01_01800.nc'
 outputFileName = f'{outputFileName_path}{run_name}/run/{outputFile}'
 var_cell = ['kineticEnergyCell']
 var_edge = ['gmKappaScaling', 'gmBolusKappa', 'gmHorizontalTaper']
