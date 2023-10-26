@@ -22,7 +22,7 @@ resolution.
 import xarray
 import pyproj
 
-from pyremap import MpasMeshDescriptor, Remapper, ProjectionGridDescriptor
+from pyremap import MpasCellMeshDescriptor, Remapper, ProjectionGridDescriptor
 # --------SPECIFIC--------------------------------------------------------
 
 print('Defining projections')
@@ -30,19 +30,30 @@ print('Defining projections')
 # Interpolation method
 #interp_method = 'bilinear'
 #interp_method = 'neareststod'
-interp_method = 'conserve'
+interp_method = 'nearestdtos'
+#interp_method = 'conserve'
 
 # IN - mesh to map from
 inGridName = 'MALIsample'
 inGridFileName_path = '/Users/irenavankova/Work/data_sim/sgr_files/sample_output/'
 inGridFileName = f'{inGridFileName_path}output_state_2205_lastDt.nc'
-inDescriptor = MpasMeshDescriptor(inGridFileName, inGridName, vertices=False)
+inDescriptor = MpasCellMeshDescriptor(inGridFileName, inGridName, vertices=False)
 
 # OUT - mesh to be mapped to
+
+outGridName = 'oQU240wLI'
+outFile = 'ocean.QU.240wLI.230220.nc'
+'''
 outGridName = 'ECwISC30to60E2r1'
-outGridFileName_path = '/Users/irenavankova/Work/data_sim/E3SM_initial_condition/'
-outGridFileName = f'{outGridFileName_path}ocean.ECwISC30to60E2r1.230220.nc'
-outDescriptor = MpasMeshDescriptor(outGridFileName, outGridName, vertices=False)
+outFile = 'ocean.ECwISC30to60E2r1.230220.nc'
+
+outGridName = 'SOwISC12to60E2r4'
+outFile = 'ocean.SOwISC12to60E2r4.210107.nc'
+'''
+
+outGridFileName_path = f'/Users/irenavankova/Work/data_sim/E3SM_initial_condition/{outGridName}/'
+outGridFileName = f'{outGridFileName_path}{outFile}'
+outDescriptor = MpasCellMeshDescriptor(outGridFileName, outGridName, vertices=False)
 
 # OUTPUT to remap from
 outputFileName_path = inGridFileName_path
@@ -52,10 +63,11 @@ run_name = 'SGR'
 remappedFileName = '{}_{}_remapped_{}.nc'.format(run_name, outGridName, interp_method)
 remappedFileName = f'{outputFileName_path}{remappedFileName}'
 
+mappingFileName_path = '/Users/irenavankova/Work/data_sim/sgr_files/mapping_files/'
 # --------GENERAL--------------------------------------------------------
 print('Creating remapper object')
 mappingFileName = 'map_{}_to_{}_{}.nc'.format(inGridName, outGridName, interp_method)
-mappingFileName = f'{outputFileName_path}{mappingFileName}'
+mappingFileName = f'{mappingFileName_path}{mappingFileName}'
 
 remapper = Remapper(inDescriptor, outDescriptor, mappingFileName)
 
